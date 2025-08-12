@@ -286,3 +286,4 @@ export function setupWebSocketHandlers(fastify) {
   
   fastify.log.info('WebSocket handlers setup complete with reactive streams');
 }
+

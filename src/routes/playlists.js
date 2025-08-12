@@ -4,3 +4,4 @@ export default async function playlistRoutes(fastify, options) {
     reply.send({ message: 'Playlists endpoint - implementation pending' });
   });
 }
+

@@ -126,3 +126,4 @@ instituteSchema.statics.findByUID = function(uid) {
 const Institute = mongoose.model('Institute', instituteSchema);
 
 export default Institute;
+

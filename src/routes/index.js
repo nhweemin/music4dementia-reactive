@@ -37,3 +37,4 @@ export async function setupRoutes(fastify) {
   
   fastify.log.info('All routes registered successfully');
 }
+

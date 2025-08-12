@@ -4,3 +4,4 @@ export default async function profileRoutes(fastify, options) {
     reply.send({ message: 'Profiles endpoint - implementation pending' });
   });
 }
+
