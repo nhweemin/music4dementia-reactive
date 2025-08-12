@@ -1,0 +1,49 @@
+{
+  "name": "fuxi-reactive-backend",
+  "version": "1.0.0",
+  "description": "Reactive music therapy backend for dementia patients with real-time features",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "build": "echo 'No build step needed'",
+    "test": "node --test test/**/*.test.js"
+  },
+  "keywords": [
+    "music-therapy",
+    "dementia",
+    "reactive",
+    "websockets",
+    "real-time",
+    "healthcare"
+  ],
+  "author": "Fuxi Team",
+  "license": "MIT",
+  "dependencies": {
+    "fastify": "^4.24.3",
+    "@fastify/websocket": "^8.3.1",
+    "@fastify/cors": "^8.4.0",
+    "@fastify/helmet": "^11.1.1",
+    "@fastify/rate-limit": "^9.1.0",
+    "@fastify/jwt": "^7.2.4",
+    "mongoose": "^8.0.3",
+    "bcryptjs": "^2.4.3",
+    "nodemailer": "^6.9.7",
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.7.5",
+    "redis": "^4.6.11",
+    "dotenv": "^16.3.1",
+    "pino": "^8.16.2",
+    "pino-pretty": "^10.2.3",
+    "joi": "^17.11.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "@types/node": "^20.10.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
