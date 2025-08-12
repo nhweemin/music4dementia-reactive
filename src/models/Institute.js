@@ -7,8 +7,7 @@ const instituteSchema = new Schema({
   uid: {
     type: String,
     required: true,
-    unique: true,
-    index: true
+    unique: true
   },
   email: {
     type: String,
@@ -59,9 +58,7 @@ const instituteSchema = new Schema({
   timestamps: true
 });
 
-// Indexes for performance
-instituteSchema.index({ email: 1 });
-instituteSchema.index({ uid: 1 });
+// Additional indexes for performance
 instituteSchema.index({ isVerifyAuth: 1 });
 
 // Password hashing middleware
