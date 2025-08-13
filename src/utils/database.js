@@ -41,8 +41,6 @@ export async function connectDatabase() {
       serverSelectionTimeoutMS: 10000, // Increased timeout
       socketTimeoutMS: 45000,
       connectTimeoutMS: 10000,
-      bufferMaxEntries: 0, // Disable mongoose buffering
-      bufferCommands: false, // Disable mongoose buffering
     });
     
     console.log('✅ Connected to MongoDB successfully');
