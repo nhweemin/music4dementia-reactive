@@ -5,19 +5,19 @@ dotenv.config();
 
 // Railway service connection with fallbacks
 const buildMongoURI = () => {
-  // Try Railway service reference first (automatic service linking)
+  // Try direct MONGO_URL first (external connection)
+  if (process.env.MONGO_URL) {
+    return process.env.MONGO_URL;
+  }
+  
+  // Try Railway service reference (automatic service linking)
   if (process.env.MONGO_PRIVATE_URL) {
     return process.env.MONGO_PRIVATE_URL;
   }
   
-  // Try manual Railway service reference
+  // Try manual Railway service reference (internal connection)
   if (process.env.MONGOHOST && process.env.MONGOUSER && process.env.MONGOPASSWORD) {
     return `mongodb://${process.env.MONGOUSER}:${process.env.MONGOPASSWORD}@${process.env.MONGOHOST}:${process.env.MONGOPORT || 27017}/fuxi_reactive`;
-  }
-  
-  // Fallback to direct MONGO_URL
-  if (process.env.MONGO_URL) {
-    return process.env.MONGO_URL;
   }
   
   // Fallback to MONGODB_URI
