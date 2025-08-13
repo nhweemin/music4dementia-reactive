@@ -3,17 +3,49 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/fuxi_reactive';
+// Railway service connection with fallbacks
+const buildMongoURI = () => {
+  // Try Railway service reference first (automatic service linking)
+  if (process.env.MONGO_PRIVATE_URL) {
+    return process.env.MONGO_PRIVATE_URL;
+  }
+  
+  // Try manual Railway service reference
+  if (process.env.MONGOHOST && process.env.MONGOUSER && process.env.MONGOPASSWORD) {
+    return `mongodb://${process.env.MONGOUSER}:${process.env.MONGOPASSWORD}@${process.env.MONGOHOST}:${process.env.MONGOPORT || 27017}/fuxi_reactive`;
+  }
+  
+  // Fallback to direct MONGO_URL
+  if (process.env.MONGO_URL) {
+    return process.env.MONGO_URL;
+  }
+  
+  // Fallback to MONGODB_URI
+  if (process.env.MONGODB_URI) {
+    return process.env.MONGODB_URI;
+  }
+  
+  // Local development fallback
+  return 'mongodb://localhost:27017/fuxi_reactive';
+};
+
+const MONGODB_URI = buildMongoURI();
 
 export async function connectDatabase() {
   try {
+    console.log('🔗 Attempting to connect to MongoDB...');
+    console.log('📍 Connection URI:', MONGODB_URI.replace(/:[^:@]*@/, ':****@')); // Hide password in logs
+    
     await mongoose.connect(MONGODB_URI, {
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000, // Increased timeout
       socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
+      bufferMaxEntries: 0, // Disable mongoose buffering
+      bufferCommands: false, // Disable mongoose buffering
     });
     
-    console.log('✅ Connected to MongoDB');
+    console.log('✅ Connected to MongoDB successfully');
     
     // Set up connection event listeners
     mongoose.connection.on('error', (error) => {
