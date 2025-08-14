@@ -12,12 +12,14 @@ import {
 } from '../utils/gridfs.js';
 
 export default async function fileRoutes(fastify, options) {
-  // Register multipart support
-  await fastify.register(import('@fastify/multipart'), {
-    limits: {
-      fileSize: 50 * 1024 * 1024, // 50MB
-    }
-  });
+  // Register multipart support if not already registered
+  if (!fastify.hasContentTypeParser('multipart/form-data')) {
+    await fastify.register(import('@fastify/multipart'), {
+      limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB
+      }
+    });
+  }
 
   // Upload audio file
   fastify.post('/upload/audio', async (request, reply) => {
