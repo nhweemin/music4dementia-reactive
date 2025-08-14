@@ -7,13 +7,6 @@ import analyticsRoutes from './analytics.js';
 import fileRoutes from './files.js';
 
 export async function setupRoutes(fastify) {
-  // Register multipart support globally for file uploads
-  await fastify.register(import('@fastify/multipart'), {
-    limits: {
-      fileSize: 50 * 1024 * 1024, // 50MB
-    }
-  });
-
   // API versioning
   await fastify.register(async function(fastify) {
     // Authentication routes (no auth required)
