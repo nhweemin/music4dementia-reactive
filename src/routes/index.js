@@ -39,7 +39,7 @@ export async function setupRoutes(fastify) {
       await fastify.register(playlistRoutes, { prefix: '/playlists' });
       await fastify.register(sessionRoutes, { prefix: '/sessions' });
       await fastify.register(analyticsRoutes, { prefix: '/analytics' });
-      await fastify.register(fileRoutes, { prefix: '/files' });
+      // await fastify.register(fileRoutes, { prefix: '/files' }); // TODO: Debug route registration issue
       
     });
   }, { prefix: '/api/v1' });
