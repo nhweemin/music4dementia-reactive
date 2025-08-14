@@ -45,6 +45,14 @@ export async function connectDatabase() {
     
     console.log('✅ Connected to MongoDB successfully');
     
+    // Initialize GridFS after connection is established
+    try {
+      const { initializeGridFS } = await import('./gridfs.js');
+      initializeGridFS();
+    } catch (gridfsError) {
+      console.error('⚠️ Failed to initialize GridFS:', gridfsError);
+    }
+    
     // Set up connection event listeners
     mongoose.connection.on('error', (error) => {
       console.error('❌ MongoDB connection error:', error);
@@ -56,6 +64,13 @@ export async function connectDatabase() {
     
     mongoose.connection.on('reconnected', () => {
       console.log('✅ MongoDB reconnected');
+      // Reinitialize GridFS on reconnection
+      try {
+        const { initializeGridFS } = await import('./gridfs.js');
+        initializeGridFS();
+      } catch (gridfsError) {
+        console.error('⚠️ Failed to reinitialize GridFS:', gridfsError);
+      }
     });
     
   } catch (error) {

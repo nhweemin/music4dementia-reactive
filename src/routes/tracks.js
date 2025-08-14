@@ -21,7 +21,9 @@ export default async function trackRoutes(fastify, options) {
       
       reply.send({
         success: true,
-        data: { tracks }
+        data: { 
+          tracks: tracks.map(track => track.toJSONWithUrls())
+        }
       });
       
     } catch (error) {
@@ -48,7 +50,7 @@ export default async function trackRoutes(fastify, options) {
       
       reply.send({
         success: true,
-        data: { track }
+        data: { track: track.toJSONWithUrls() }
       });
       
     } catch (error) {
@@ -70,7 +72,7 @@ export default async function trackRoutes(fastify, options) {
       
       reply.send({
         success: true,
-        data: { tracks }
+        data: { tracks: tracks.map(track => track.toJSONWithUrls()) }
       });
       
     } catch (error) {
@@ -91,7 +93,7 @@ export default async function trackRoutes(fastify, options) {
       
       reply.send({
         success: true,
-        data: { tracks }
+        data: { tracks: tracks.map(track => track.toJSONWithUrls()) }
       });
       
     } catch (error) {
@@ -113,7 +115,7 @@ export default async function trackRoutes(fastify, options) {
       
       reply.send({
         success: true,
-        data: { tracks }
+        data: { tracks: tracks.map(track => track.toJSONWithUrls()) }
       });
       
     } catch (error) {
@@ -125,8 +127,146 @@ export default async function trackRoutes(fastify, options) {
     }
   });
   
-  // Upload new track (admin/content creator endpoint)
-  fastify.post('/upload', {
+  // Upload new track with files (multipart form data)
+  fastify.post('/upload', async (request, reply) => {
+    try {
+      // Register multipart if not already registered
+      if (!fastify.hasContentTypeParser('multipart/form-data')) {
+        await fastify.register(import('@fastify/multipart'), {
+          limits: {
+            fileSize: 50 * 1024 * 1024, // 50MB
+          }
+        });
+      }
+
+      const parts = request.parts();
+      const trackData = {};
+      let audioFileId = null;
+      let imageFileId = null;
+
+      // Process multipart form data
+      for await (const part of parts) {
+        if (part.type === 'file') {
+          const buffer = await part.toBuffer();
+          
+          if (part.fieldname === 'audio') {
+            // Validate audio file
+            if (!part.mimetype.startsWith('audio/')) {
+              return reply.code(400).send({
+                error: 'Bad Request',
+                message: 'Invalid audio file type'
+              });
+            }
+
+            // Upload audio to GridFS
+            const { uploadAudioFile } = await import('../utils/gridfs.js');
+            const audioInfo = await uploadAudioFile(part.filename, buffer, {
+              contentType: part.mimetype,
+              originalName: part.filename,
+              uploadedBy: request.user?.id
+            });
+            audioFileId = audioInfo.fileId;
+
+          } else if (part.fieldname === 'image') {
+            // Validate image file
+            if (!part.mimetype.startsWith('image/')) {
+              return reply.code(400).send({
+                error: 'Bad Request',
+                message: 'Invalid image file type'
+              });
+            }
+
+            // Upload image to GridFS
+            const { uploadImageFile } = await import('../utils/gridfs.js');
+            const imageInfo = await uploadImageFile(part.filename, buffer, {
+              contentType: part.mimetype,
+              originalName: part.filename,
+              uploadedBy: request.user?.id
+            });
+            imageFileId = imageInfo.fileId;
+          }
+        } else {
+          // Handle form fields
+          trackData[part.fieldname] = part.value;
+        }
+      }
+
+      // Validate required fields
+      if (!trackData.title || !trackData.language) {
+        return reply.code(400).send({
+          error: 'Bad Request',
+          message: 'Title and language are required'
+        });
+      }
+
+      // Parse JSON fields if they exist
+      if (trackData.features && typeof trackData.features === 'string') {
+        try {
+          trackData.features = JSON.parse(trackData.features);
+        } catch (e) {
+          return reply.code(400).send({
+            error: 'Bad Request',
+            message: 'Invalid features JSON format'
+          });
+        }
+      }
+
+      if (trackData.tags && typeof trackData.tags === 'string') {
+        try {
+          trackData.tags = JSON.parse(trackData.tags);
+        } catch (e) {
+          return reply.code(400).send({
+            error: 'Bad Request',
+            message: 'Invalid tags JSON format'
+          });
+        }
+      }
+
+      // Convert numeric fields
+      if (trackData.era) trackData.era = parseInt(trackData.era);
+      if (trackData.duration) trackData.duration = parseInt(trackData.duration);
+
+      // Add file IDs to track data
+      if (audioFileId) trackData.audioFileId = audioFileId;
+      if (imageFileId) trackData.imageFileId = imageFileId;
+
+      // Create new track
+      const track = new Track(trackData);
+      await track.save();
+      
+      fastify.log.info(`New track uploaded: ${track.title} by ${track.artist}`);
+      
+      reply.code(201).send({
+        success: true,
+        message: 'Track uploaded successfully',
+        data: { 
+          track: track.toJSONWithUrls(),
+          files: {
+            audio: audioFileId ? { fileId: audioFileId } : null,
+            image: imageFileId ? { fileId: imageFileId } : null
+          }
+        }
+      });
+      
+    } catch (error) {
+      if (error.code === 11000) {
+        // Duplicate ytId
+        return reply.code(409).send({
+          error: 'Conflict',
+          message: 'Track with this YouTube ID already exists'
+        });
+      }
+      
+      fastify.log.error('Upload track error:', error);
+      reply.code(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to upload track'
+      });
+    }
+  });
+
+  // Upload track metadata only (JSON endpoint)
+  fastify.post('/upload-metadata', {
     schema: {
       body: {
         type: 'object',
@@ -140,6 +280,8 @@ export default async function trackRoutes(fastify, options) {
           ytId: { type: 'string' },
           imageUrl: { type: 'string' },
           uri: { type: 'string' },
+          audioFileId: { type: 'string' },
+          imageFileId: { type: 'string' },
           features: {
             type: 'object',
             properties: {
@@ -164,12 +306,12 @@ export default async function trackRoutes(fastify, options) {
       const track = new Track(trackData);
       await track.save();
       
-      fastify.log.info(`New track uploaded: ${track.title} by ${track.artist}`);
+      fastify.log.info(`New track metadata uploaded: ${track.title} by ${track.artist}`);
       
       reply.code(201).send({
         success: true,
-        message: 'Track uploaded successfully',
-        data: { track }
+        message: 'Track metadata uploaded successfully',
+        data: { track: track.toJSONWithUrls() }
       });
       
     } catch (error) {
@@ -181,10 +323,10 @@ export default async function trackRoutes(fastify, options) {
         });
       }
       
-      fastify.log.error('Upload track error:', error);
+      fastify.log.error('Upload track metadata error:', error);
       reply.code(500).send({
         error: 'Internal Server Error',
-        message: 'Failed to upload track'
+        message: 'Failed to upload track metadata'
       });
     }
   });

@@ -4,6 +4,7 @@ import trackRoutes from './tracks.js';
 import playlistRoutes from './playlists.js';
 import sessionRoutes from './sessions.js';
 import analyticsRoutes from './analytics.js';
+import fileRoutes from './files.js';
 
 export async function setupRoutes(fastify) {
   // API versioning
@@ -25,12 +26,13 @@ export async function setupRoutes(fastify) {
         }
       });
       
-      // Register protected routes
-      await fastify.register(profileRoutes, { prefix: '/profiles' });
-      await fastify.register(trackRoutes, { prefix: '/tracks' });
-      await fastify.register(playlistRoutes, { prefix: '/playlists' });
-      await fastify.register(sessionRoutes, { prefix: '/sessions' });
-      await fastify.register(analyticsRoutes, { prefix: '/analytics' });
+                    // Register protected routes
+              await fastify.register(profileRoutes, { prefix: '/profiles' });
+              await fastify.register(trackRoutes, { prefix: '/tracks' });
+              await fastify.register(playlistRoutes, { prefix: '/playlists' });
+              await fastify.register(sessionRoutes, { prefix: '/sessions' });
+              await fastify.register(analyticsRoutes, { prefix: '/analytics' });
+              await fastify.register(fileRoutes, { prefix: '/files' });
       
     });
   }, { prefix: '/api/v1' });

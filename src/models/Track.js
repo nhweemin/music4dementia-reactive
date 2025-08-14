@@ -33,7 +33,11 @@ const trackSchema = new Schema({
   },
   imageUrl: {
     type: String,
-    required: true
+    required: false // Optional external image URL
+  },
+  imageFileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: false // GridFS file ID for stored image
   },
   era: {
     type: Number,
@@ -42,7 +46,11 @@ const trackSchema = new Schema({
   },
   uri: {
     type: String,
-    required: false // URI to loaded mp3 file from S3 bucket
+    required: false // Optional external URI for backward compatibility
+  },
+  audioFileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: false // GridFS file ID for stored audio file
   },
   // Additional reactive features
   features: {
@@ -190,6 +198,44 @@ trackSchema.methods.updateAnalytics = function(reaction) {
   }
   
   return this.save();
+};
+
+// Get audio file URL (GridFS or external)
+trackSchema.methods.getAudioUrl = function() {
+  if (this.audioFileId) {
+    return `/api/v1/files/audio/${this.audioFileId}`;
+  }
+  return this.uri || null;
+};
+
+// Get image file URL (GridFS or external)
+trackSchema.methods.getImageUrl = function() {
+  if (this.imageFileId) {
+    return `/api/v1/files/image/${this.imageFileId}`;
+  }
+  return this.imageUrl || null;
+};
+
+// Check if track has audio file
+trackSchema.methods.hasAudioFile = function() {
+  return !!(this.audioFileId || this.uri);
+};
+
+// Check if track has image file
+trackSchema.methods.hasImageFile = function() {
+  return !!(this.imageFileId || this.imageUrl);
+};
+
+// Get track with file URLs
+trackSchema.methods.toJSONWithUrls = function() {
+  const trackObj = this.toObject();
+  return {
+    ...trackObj,
+    audioUrl: this.getAudioUrl(),
+    imageUrl: this.getImageUrl(),
+    hasAudio: this.hasAudioFile(),
+    hasImage: this.hasImageFile()
+  };
 };
 trackSchema.index({ artist: 1, genre: 1 });
 trackSchema.index({ 'features.energy': 1, 'features.valence': 1 });
