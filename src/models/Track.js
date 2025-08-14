@@ -11,8 +11,9 @@ const trackSchema = new Schema({
   },
   ytId: {
     type: String,
-    required: true,
+    required: false, // Optional for uploaded tracks
     unique: true,
+    sparse: true, // Allow multiple null values
     index: true
   },
   artist: {

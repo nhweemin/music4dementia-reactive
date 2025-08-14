@@ -131,7 +131,14 @@ export default async function trackRoutes(fastify, options) {
   // Upload new track with files (multipart form data)
   fastify.post('/upload', async (request, reply) => {
     try {
-      // Multipart support is registered globally
+      // Register multipart if not already registered
+      if (!fastify.hasContentTypeParser('multipart/form-data')) {
+        await fastify.register(import('@fastify/multipart'), {
+          limits: {
+            fileSize: 50 * 1024 * 1024, // 50MB
+          }
+        });
+      }
 
       const parts = request.parts();
       const trackData = {};
@@ -222,6 +229,12 @@ export default async function trackRoutes(fastify, options) {
       if (audioFileId) trackData.audioFileId = audioFileId;
       if (imageFileId) trackData.imageFileId = imageFileId;
 
+      // Generate unique identifier if no ytId provided
+      if (!trackData.ytId) {
+        // Generate a unique track ID based on title and timestamp
+        trackData.ytId = `track_${Date.now()}_${trackData.title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}`;
+      }
+
       // Create new track
       const track = new Track(trackData);
       await track.save();
@@ -293,6 +306,12 @@ export default async function trackRoutes(fastify, options) {
   }, async (request, reply) => {
     try {
       const trackData = request.body;
+      
+      // Generate unique identifier if no ytId provided
+      if (!trackData.ytId) {
+        // Generate a unique track ID based on title and timestamp
+        trackData.ytId = `track_${Date.now()}_${trackData.title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}`;
+      }
       
       // Create new track
       const track = new Track(trackData);
