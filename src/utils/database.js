@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { initializeGridFS } from './gridfs.js';
 
 dotenv.config();
 
@@ -47,7 +48,6 @@ export async function connectDatabase() {
     
     // Initialize GridFS after connection is established
     try {
-      const { initializeGridFS } = await import('./gridfs.js');
       initializeGridFS();
     } catch (gridfsError) {
       console.error('⚠️ Failed to initialize GridFS:', gridfsError);
@@ -66,7 +66,6 @@ export async function connectDatabase() {
       console.log('✅ MongoDB reconnected');
       // Reinitialize GridFS on reconnection
       try {
-        const { initializeGridFS } = await import('./gridfs.js');
         initializeGridFS();
       } catch (gridfsError) {
         console.error('⚠️ Failed to reinitialize GridFS:', gridfsError);
