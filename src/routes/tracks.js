@@ -124,5 +124,145 @@ export default async function trackRoutes(fastify, options) {
       });
     }
   });
+  
+  // Upload new track (admin/content creator endpoint)
+  fastify.post('/upload', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['title', 'language'],
+        properties: {
+          title: { type: 'string', minLength: 1 },
+          artist: { type: 'string' },
+          language: { type: 'string' },
+          genre: { type: 'string' },
+          era: { type: 'number' },
+          ytId: { type: 'string' },
+          imageUrl: { type: 'string' },
+          uri: { type: 'string' },
+          features: {
+            type: 'object',
+            properties: {
+              energy: { type: 'number', minimum: 0, maximum: 1 },
+              valence: { type: 'number', minimum: 0, maximum: 1 },
+              tempo: { type: 'number' },
+              acousticness: { type: 'number', minimum: 0, maximum: 1 },
+              danceability: { type: 'number', minimum: 0, maximum: 1 },
+              instrumentalness: { type: 'number', minimum: 0, maximum: 1 }
+            }
+          },
+          tags: { type: 'array', items: { type: 'string' } },
+          duration: { type: 'number' }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const trackData = request.body;
+      
+      // Create new track
+      const track = new Track(trackData);
+      await track.save();
+      
+      fastify.log.info(`New track uploaded: ${track.title} by ${track.artist}`);
+      
+      reply.code(201).send({
+        success: true,
+        message: 'Track uploaded successfully',
+        data: { track }
+      });
+      
+    } catch (error) {
+      if (error.code === 11000) {
+        // Duplicate ytId
+        return reply.code(409).send({
+          error: 'Conflict',
+          message: 'Track with this YouTube ID already exists'
+        });
+      }
+      
+      fastify.log.error('Upload track error:', error);
+      reply.code(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to upload track'
+      });
+    }
+  });
+  
+  // Update track
+  fastify.put('/:trackId', {
+    schema: {
+      params: {
+        type: 'object',
+        properties: {
+          trackId: { type: 'string' }
+        },
+        required: ['trackId']
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { trackId } = request.params;
+      const updateData = request.body;
+      
+      const track = await Track.findByIdAndUpdate(
+        trackId, 
+        updateData, 
+        { new: true, runValidators: true }
+      );
+      
+      if (!track) {
+        return reply.code(404).send({
+          error: 'Not Found',
+          message: 'Track not found'
+        });
+      }
+      
+      reply.send({
+        success: true,
+        message: 'Track updated successfully',
+        data: { track }
+      });
+      
+    } catch (error) {
+      fastify.log.error('Update track error:', error);
+      reply.code(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to update track'
+      });
+    }
+  });
+  
+  // Delete track
+  fastify.delete('/:trackId', async (request, reply) => {
+    try {
+      const { trackId } = request.params;
+      
+      const track = await Track.findByIdAndUpdate(
+        trackId,
+        { isActive: false },
+        { new: true }
+      );
+      
+      if (!track) {
+        return reply.code(404).send({
+          error: 'Not Found', 
+          message: 'Track not found'
+        });
+      }
+      
+      reply.send({
+        success: true,
+        message: 'Track deleted successfully'
+      });
+      
+    } catch (error) {
+      fastify.log.error('Delete track error:', error);
+      reply.code(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to delete track'
+      });
+    }
+  });
 }
 
