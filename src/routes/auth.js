@@ -30,11 +30,13 @@ export default async function authRoutes(fastify, options) {
       }
       
       // Create new institute
+      const isDevelopment = process.env.NODE_ENV !== 'production';
+      const isTestingMode = process.env.TESTING_MODE === 'true';
       const institute = new Institute({
         email,
         name,
         password,
-        isVerifyAuth: false
+        isVerifyAuth: isDevelopment || isTestingMode // Auto-verify in development or testing mode
       });
       
       institute.generateUID();
@@ -47,24 +49,36 @@ export default async function authRoutes(fastify, options) {
         uid: institute.uid
       });
       
-      // Generate and send OTP
-      const otp = generateOTP();
-      institute.otpResetPassword = otp;
-      await institute.save();
-      
-      // Send verification email (async)
-      sendEmail(email, 'signup', { otp, name }).catch(err => {
-        fastify.log.error('Failed to send signup email:', err);
-      });
-      
-      reply.code(201).send({
-        success: true,
-        message: 'Account created successfully. Please check your email for verification.',
-        data: {
-          institute: institute.toPublicJSON(),
-          token
-        }
-      });
+      if (isDevelopment || isTestingMode) {
+        // In development or testing mode, skip email verification
+        reply.code(201).send({
+          success: true,
+          message: 'Account created successfully and auto-verified for testing.',
+          data: {
+            institute: institute.toPublicJSON(),
+            token
+          }
+        });
+      } else {
+        // Generate and send OTP for production
+        const otp = generateOTP();
+        institute.otpResetPassword = otp;
+        await institute.save();
+        
+        // Send verification email (async)
+        sendEmail(email, 'signup', { otp, name }).catch(err => {
+          fastify.log.error('Failed to send signup email:', err);
+        });
+        
+        reply.code(201).send({
+          success: true,
+          message: 'Account created successfully. Please check your email for verification.',
+          data: {
+            institute: institute.toPublicJSON(),
+            token
+          }
+        });
+      }
       
     } catch (error) {
       fastify.log.error('Signup error:', error);
@@ -290,6 +304,51 @@ export default async function authRoutes(fastify, options) {
       reply.code(500).send({
         error: 'Internal Server Error',
         message: 'Failed to reset password'
+      });
+    }
+  });
+  
+  // Development/Testing endpoint to manually verify accounts
+  fastify.post('/dev-verify', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['email'],
+        properties: {
+          email: { type: 'string', format: 'email' }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    const { email } = request.body;
+    
+    try {
+      const institute = await Institute.findByEmail(email);
+      if (!institute) {
+        return reply.code(404).send({
+          error: 'Not Found',
+          message: 'Institute not found'
+        });
+      }
+      
+      // Verify the account
+      institute.isVerifyAuth = true;
+      institute.otpResetPassword = null;
+      await institute.save();
+      
+      reply.send({
+        success: true,
+        message: 'Account verified successfully for testing',
+        data: {
+          institute: institute.toPublicJSON()
+        }
+      });
+      
+    } catch (error) {
+      fastify.log.error('Dev verify error:', error);
+      reply.code(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to verify account'
       });
     }
   });
