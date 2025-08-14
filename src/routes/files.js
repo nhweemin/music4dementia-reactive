@@ -12,14 +12,7 @@ import {
 } from '../utils/gridfs.js';
 
 export default async function fileRoutes(fastify, options) {
-  // Register multipart support if not already registered
-  if (!fastify.hasContentTypeParser('multipart/form-data')) {
-    await fastify.register(import('@fastify/multipart'), {
-      limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB
-      }
-    });
-  }
+  // Multipart support is registered globally
 
   // Upload audio file
   fastify.post('/upload/audio', async (request, reply) => {
@@ -353,6 +346,130 @@ export default async function fileRoutes(fastify, options) {
       reply.code(500).send({
         error: 'Internal Server Error',
         message: 'Failed to list files'
+      });
+    }
+  });
+
+  // Bulk upload files
+  fastify.post('/upload/bulk', async (request, reply) => {
+    try {
+      const parts = request.parts();
+      const uploadedFiles = [];
+      const errors = [];
+
+      for await (const part of parts) {
+        if (part.type === 'file') {
+          try {
+            const buffer = await part.toBuffer();
+            let fileInfo;
+
+            if (part.mimetype.startsWith('audio/')) {
+              fileInfo = await uploadAudioFile(part.filename, buffer, {
+                contentType: part.mimetype,
+                originalName: part.filename,
+                uploadedBy: request.user?.id,
+                size: buffer.length
+              });
+              uploadedFiles.push({
+                type: 'audio',
+                fileId: fileInfo.fileId,
+                filename: fileInfo.filename,
+                size: fileInfo.length
+              });
+            } else if (part.mimetype.startsWith('image/')) {
+              fileInfo = await uploadImageFile(part.filename, buffer, {
+                contentType: part.mimetype,
+                originalName: part.filename,
+                uploadedBy: request.user?.id,
+                size: buffer.length
+              });
+              uploadedFiles.push({
+                type: 'image',
+                fileId: fileInfo.fileId,
+                filename: fileInfo.filename,
+                size: fileInfo.length
+              });
+            } else {
+              errors.push({
+                filename: part.filename,
+                error: 'Unsupported file type'
+              });
+            }
+          } catch (error) {
+            errors.push({
+              filename: part.filename,
+              error: error.message
+            });
+          }
+        }
+      }
+
+      reply.code(201).send({
+        success: true,
+        message: `Uploaded ${uploadedFiles.length} files successfully`,
+        data: {
+          uploaded: uploadedFiles,
+          errors: errors,
+          summary: {
+            total: uploadedFiles.length + errors.length,
+            successful: uploadedFiles.length,
+            failed: errors.length
+          }
+        }
+      });
+
+    } catch (error) {
+      fastify.log.error('Bulk upload error:', error);
+      reply.code(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to process bulk upload'
+      });
+    }
+  });
+
+  // Get storage statistics
+  fastify.get('/stats', async (request, reply) => {
+    try {
+      const audioFiles = await listFiles('audio', 1000, 0);
+      const imageFiles = await listFiles('image', 1000, 0);
+
+      const audioStats = audioFiles.reduce((acc, file) => {
+        acc.count++;
+        acc.totalSize += file.length || 0;
+        return acc;
+      }, { count: 0, totalSize: 0 });
+
+      const imageStats = imageFiles.reduce((acc, file) => {
+        acc.count++;
+        acc.totalSize += file.length || 0;
+        return acc;
+      }, { count: 0, totalSize: 0 });
+
+      reply.send({
+        success: true,
+        data: {
+          audio: {
+            count: audioStats.count,
+            totalSize: audioStats.totalSize,
+            averageSize: audioStats.count > 0 ? Math.round(audioStats.totalSize / audioStats.count) : 0
+          },
+          image: {
+            count: imageStats.count,
+            totalSize: imageStats.totalSize,
+            averageSize: imageStats.count > 0 ? Math.round(imageStats.totalSize / imageStats.count) : 0
+          },
+          total: {
+            count: audioStats.count + imageStats.count,
+            totalSize: audioStats.totalSize + imageStats.totalSize
+          }
+        }
+      });
+
+    } catch (error) {
+      fastify.log.error('Get stats error:', error);
+      reply.code(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to get storage statistics'
       });
     }
   });

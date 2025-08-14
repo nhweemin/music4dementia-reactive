@@ -7,6 +7,13 @@ import analyticsRoutes from './analytics.js';
 import fileRoutes from './files.js';
 
 export async function setupRoutes(fastify) {
+  // Register multipart support globally for file uploads
+  await fastify.register(import('@fastify/multipart'), {
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB
+    }
+  });
+
   // API versioning
   await fastify.register(async function(fastify) {
     // Authentication routes (no auth required)
@@ -26,13 +33,13 @@ export async function setupRoutes(fastify) {
         }
       });
       
-                    // Register protected routes
-              await fastify.register(profileRoutes, { prefix: '/profiles' });
-              await fastify.register(trackRoutes, { prefix: '/tracks' });
-              await fastify.register(playlistRoutes, { prefix: '/playlists' });
-              await fastify.register(sessionRoutes, { prefix: '/sessions' });
-              await fastify.register(analyticsRoutes, { prefix: '/analytics' });
-              // await fastify.register(fileRoutes, { prefix: '/files' }); // TODO: Fix multipart registration conflict
+      // Register protected routes
+      await fastify.register(profileRoutes, { prefix: '/profiles' });
+      await fastify.register(trackRoutes, { prefix: '/tracks' });
+      await fastify.register(playlistRoutes, { prefix: '/playlists' });
+      await fastify.register(sessionRoutes, { prefix: '/sessions' });
+      await fastify.register(analyticsRoutes, { prefix: '/analytics' });
+      await fastify.register(fileRoutes, { prefix: '/files' });
       
     });
   }, { prefix: '/api/v1' });
