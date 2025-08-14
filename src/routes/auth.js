@@ -308,6 +308,40 @@ export default async function authRoutes(fastify, options) {
     }
   });
   
+  // Development/Testing endpoint to check if account exists
+  fastify.get('/dev-check/:email', async (request, reply) => {
+    const { email } = request.params;
+    
+    try {
+      const institute = await Institute.findByEmail(email);
+      
+      if (!institute) {
+        return reply.send({
+          success: false,
+          message: 'Account not found',
+          data: { email, exists: false }
+        });
+      }
+      
+      reply.send({
+        success: true,
+        message: 'Account found',
+        data: {
+          email,
+          exists: true,
+          institute: institute.toPublicJSON()
+        }
+      });
+      
+    } catch (error) {
+      fastify.log.error('Dev check error:', error);
+      reply.code(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to check account'
+      });
+    }
+  });
+
   // Development/Testing endpoint to manually verify accounts
   fastify.post('/dev-verify', {
     schema: {
