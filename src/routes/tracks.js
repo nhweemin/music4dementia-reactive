@@ -1,4 +1,5 @@
 import Track from '../models/Track.js';
+import { uploadAudioFile, uploadImageFile } from '../utils/gridfs.js';
 
 export default async function trackRoutes(fastify, options) {
   // Search tracks
@@ -159,7 +160,6 @@ export default async function trackRoutes(fastify, options) {
             }
 
             // Upload audio to GridFS
-            const { uploadAudioFile } = await import('../utils/gridfs.js');
             const audioInfo = await uploadAudioFile(part.filename, buffer, {
               contentType: part.mimetype,
               originalName: part.filename,
@@ -177,7 +177,6 @@ export default async function trackRoutes(fastify, options) {
             }
 
             // Upload image to GridFS
-            const { uploadImageFile } = await import('../utils/gridfs.js');
             const imageInfo = await uploadImageFile(part.filename, buffer, {
               contentType: part.mimetype,
               originalName: part.filename,

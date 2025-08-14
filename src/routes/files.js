@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import multer from 'multer';
 import {
   uploadAudioFile,
   uploadImageFile,
@@ -12,36 +11,8 @@ import {
   listFiles
 } from '../utils/gridfs.js';
 
-// Configure multer for file uploads
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.fieldname === 'audio') {
-      // Accept audio files
-      if (file.mimetype.startsWith('audio/')) {
-        cb(null, true);
-      } else {
-        cb(new Error('Only audio files are allowed for audio field'), false);
-      }
-    } else if (file.fieldname === 'image') {
-      // Accept image files
-      if (file.mimetype.startsWith('image/')) {
-        cb(null, true);
-      } else {
-        cb(new Error('Only image files are allowed for image field'), false);
-      }
-    } else {
-      cb(new Error('Invalid field name'), false);
-    }
-  }
-});
-
 export default async function fileRoutes(fastify, options) {
-  // Register multer with fastify
+  // Register multipart support
   await fastify.register(import('@fastify/multipart'), {
     limits: {
       fileSize: 50 * 1024 * 1024, // 50MB
