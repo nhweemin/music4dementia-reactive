@@ -137,15 +137,15 @@ async function start() {
     // Setup reactive features
     await setupReactiveFeatures();
     
-    // Serve static files
-    await fastify.register(import('@fastify/static'), {
-      root: path.join(process.cwd(), 'public'),
-      prefix: '/public/'
-    });
-
-    // Upload page route
+    // Upload page route (serve HTML directly)
     fastify.get('/upload', async (request, reply) => {
-      return reply.sendFile('upload.html');
+      const fs = await import('fs/promises');
+      try {
+        const html = await fs.readFile(path.join(process.cwd(), 'public', 'upload.html'), 'utf8');
+        reply.type('text/html').send(html);
+      } catch (error) {
+        reply.code(404).send({ error: 'Upload page not found' });
+      }
     });
 
     // Setup routes
