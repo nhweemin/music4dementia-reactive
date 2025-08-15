@@ -71,7 +71,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public (commented out - we need our public directory for upload page)
 
 # vuepress build output
 .vuepress/dist

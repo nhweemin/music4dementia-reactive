@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUXI - Song Upload</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .auth-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .upload-section {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-display:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .file-input-display.has-file {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .progress {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .range-input {
+            margin-top: 5px;
+        }
+
+        .range-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 8px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            min-height: 45px;
+            cursor: text;
+        }
+
+        .tag {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tag-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+            padding: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 FUXI</h1>
+            <p>Music Therapy Song Upload</p>
+        </div>
+
+        <div class="content">
+            <!-- Authentication Section -->
+            <div class="auth-section" id="authSection">
+                <h3>🔐 Authentication Required</h3>
+                <p style="margin: 10px 0;">Please sign in or create an account to upload songs.</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="your-email@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Your password" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Name (for new accounts)</label>
+                    <input type="text" id="name" placeholder="Your full name">
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="signIn()">Sign In</button>
+                    <button class="btn btn-secondary" onclick="signUp()">Create Account</button>
+                </div>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="upload-section" id="uploadSection">
+                <h3>🎵 Upload Your Song</h3>
+                
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <!-- File Uploads -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>🎵 Audio File</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="audioFile" class="file-input" accept="audio/*">
+                                <div class="file-input-display" id="audioDisplay">
+                                    <span>📁 Choose audio file (MP3, WAV, etc.)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>🖼️ Cover Image</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="imageFile" class="file-input" accept="image/*">
+                                <div class="file-input-display" id="imageDisplay">
+                                    <span>📁 Choose cover image (JPG, PNG)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic Info -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="title">Song Title *</label>
+                            <input type="text" id="title" placeholder="Enter song title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="artist">Artist</label>
+                            <input type="text" id="artist" placeholder="Artist name">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="language">Language *</label>
+                            <select id="language" required>
+                                <option value="">Select language</option>
+                                <option value="English">English</option>
+                                <option value="Mandarin">Mandarin</option>
+                                <option value="Cantonese">Cantonese</option>
+                                <option value="Malay">Malay</option>
+                                <option value="Tamil">Tamil</option>
+                                <option value="Hindi">Hindi</option>
+                                <option value="Japanese">Japanese</option>
+                                <option value="Korean">Korean</option>
+                                <option value="Spanish">Spanish</option>
+                                <option value="French">French</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="genre">Genre</label>
+                            <select id="genre">
+                                <option value="">Select genre</option>
+                                <option value="Pop">Pop</option>
+                                <option value="Rock">Rock</option>
+                                <option value="Jazz">Jazz</option>
+                                <option value="Classical">Classical</option>
+                                <option value="Folk">Folk</option>
+                                <option value="Electronic">Electronic</option>
+                                <option value="Ambient">Ambient</option>
+                                <option value="Meditation">Meditation</option>
+                                <option value="Nature Sounds">Nature Sounds</option>
+                                <option value="Therapy">Therapy</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="era">Year/Era</label>
+                            <input type="number" id="era" placeholder="2023" min="1900" max="2030">
+                        </div>
+                        <div class="form-group">
+                            <label for="duration">Duration (seconds)</label>
+                            <input type="number" id="duration" placeholder="180" min="1">
+                        </div>
+                    </div>
+
+                    <!-- Music Features -->
+                    <div class="form-group">
+                        <label>🎛️ Music Features</label>
+                        <div class="features-grid">
+                            <div>
+                                <label for="energy">Energy: <span class="range-value" id="energyValue">0.5</span></label>
+                                <input type="range" id="energy" class="range-input" min="0" max="1" step="0.1" value="0.5">
+                            </div>
+                            <div>
+                                <label for="valence">Valence: <span class="range-value" id="valenceValue">0.5</span></label>
+                                <input type="range" id="valence" class="range-input" min="0" max="1" step="0.1" value="0.5">
+                            </div>
+                            <div>
+                                <label for="tempo">Tempo: <span class="range-value" id="tempoValue">120</span> BPM</label>
+                                <input type="range" id="tempo" class="range-input" min="60" max="200" step="1" value="120">
+                            </div>
+                            <div>
+                                <label for="acousticness">Acousticness: <span class="range-value" id="acousticnessValue">0.5</span></label>
+                                <input type="range" id="acousticness" class="range-input" min="0" max="1" step="0.1" value="0.5">
+                            </div>
+                            <div>
+                                <label for="danceability">Danceability: <span class="range-value" id="danceabilityValue">0.5</span></label>
+                                <input type="range" id="danceability" class="range-input" min="0" max="1" step="0.1" value="0.5">
+                            </div>
+                            <div>
+                                <label for="instrumentalness">Instrumentalness: <span class="range-value" id="instrumentalnessValue">0.5</span></label>
+                                <input type="range" id="instrumentalness" class="range-input" min="0" max="1" step="0.1" value="0.5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="form-group">
+                        <label>🏷️ Tags</label>
+                        <div class="tags-input" id="tagsInput" onclick="focusTagInput()">
+                            <input type="text" class="tag-input" id="tagInput" placeholder="Add tags (press Enter)">
+                        </div>
+                    </div>
+
+                    <!-- Upload Button -->
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" id="uploadBtn">
+                            🚀 Upload Song
+                        </button>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress" id="progressBar">
+                        <div class="progress-bar" id="progressBarFill"></div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Alerts -->
+            <div class="alert alert-success" id="successAlert"></div>
+            <div class="alert alert-error" id="errorAlert"></div>
+            <div class="alert alert-info" id="infoAlert"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = localStorage.getItem('authToken');
+        let tags = [];
+
+        // Check if already authenticated
+        if (authToken) {
+            showUploadSection();
+        }
+
+        // File input handlers
+        document.getElementById('audioFile').addEventListener('change', function(e) {
+            updateFileDisplay('audioDisplay', e.target.files[0], '🎵');
+        });
+
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            updateFileDisplay('imageDisplay', e.target.files[0], '🖼️');
+        });
+
+        // Range input handlers
+        document.querySelectorAll('input[type="range"]').forEach(input => {
+            input.addEventListener('input', function() {
+                const valueSpan = document.getElementById(this.id + 'Value');
+                if (valueSpan) {
+                    valueSpan.textContent = this.value;
+                }
+            });
+        });
+
+        // Tag input handler
+        document.getElementById('tagInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addTag(this.value.trim());
+                this.value = '';
+            }
+        });
+
+        // Form submission
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            uploadSong();
+        });
+
+        function updateFileDisplay(displayId, file, icon) {
+            const display = document.getElementById(displayId);
+            if (file) {
+                display.innerHTML = `<span>${icon} ${file.name} (${formatFileSize(file.size)})</span>`;
+                display.classList.add('has-file');
+            } else {
+                display.innerHTML = `<span>📁 Choose ${displayId.includes('audio') ? 'audio' : 'image'} file</span>`;
+                display.classList.remove('has-file');
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function addTag(tag) {
+            if (tag && !tags.includes(tag)) {
+                tags.push(tag);
+                renderTags();
+            }
+        }
+
+        function removeTag(tag) {
+            tags = tags.filter(t => t !== tag);
+            renderTags();
+        }
+
+        function renderTags() {
+            const tagsInput = document.getElementById('tagsInput');
+            const tagInput = document.getElementById('tagInput');
+            
+            tagsInput.innerHTML = '';
+            
+            tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.innerHTML = `${tag} <span class="tag-remove" onclick="removeTag('${tag}')">×</span>`;
+                tagsInput.appendChild(tagElement);
+            });
+            
+            tagsInput.appendChild(tagInput);
+        }
+
+        function focusTagInput() {
+            document.getElementById('tagInput').focus();
+        }
+
+        async function signUp() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = document.getElementById('name').value;
+
+            if (!email || !password || !name) {
+                showAlert('error', 'Please fill in all fields for account creation.');
+                return;
+            }
+
+            try {
+                showAlert('info', 'Creating account...');
+                
+                const response = await fetch('/api/v1/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password, name }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    authToken = data.data.token;
+                    localStorage.setItem('authToken', authToken);
+                    showAlert('success', 'Account created successfully! You can now upload songs.');
+                    showUploadSection();
+                } else {
+                    showAlert('error', data.message || 'Failed to create account.');
+                }
+            } catch (error) {
+                showAlert('error', 'Network error. Please try again.');
+                console.error('Signup error:', error);
+            }
+        }
+
+        async function signIn() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showAlert('error', 'Please enter email and password.');
+                return;
+            }
+
+            try {
+                showAlert('info', 'Signing in...');
+                
+                const response = await fetch('/api/v1/auth/signin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    authToken = data.data.token;
+                    localStorage.setItem('authToken', authToken);
+                    showAlert('success', 'Signed in successfully! You can now upload songs.');
+                    showUploadSection();
+                } else {
+                    showAlert('error', data.message || 'Failed to sign in.');
+                }
+            } catch (error) {
+                showAlert('error', 'Network error. Please try again.');
+                console.error('Signin error:', error);
+            }
+        }
+
+        function showUploadSection() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('uploadSection').style.display = 'block';
+        }
+
+        async function uploadSong() {
+            const title = document.getElementById('title').value;
+            const language = document.getElementById('language').value;
+
+            if (!title || !language) {
+                showAlert('error', 'Please fill in required fields (Title and Language).');
+                return;
+            }
+
+            const formData = new FormData();
+            const audioFile = document.getElementById('audioFile').files[0];
+            const imageFile = document.getElementById('imageFile').files[0];
+
+            // Add files if selected
+            if (audioFile) formData.append('audio', audioFile);
+            if (imageFile) formData.append('image', imageFile);
+
+            // Add form data
+            formData.append('title', title);
+            formData.append('language', language);
+            
+            const artist = document.getElementById('artist').value;
+            if (artist) formData.append('artist', artist);
+            
+            const genre = document.getElementById('genre').value;
+            if (genre) formData.append('genre', genre);
+            
+            const era = document.getElementById('era').value;
+            if (era) formData.append('era', era);
+            
+            const duration = document.getElementById('duration').value;
+            if (duration) formData.append('duration', duration);
+
+            // Add features
+            const features = {
+                energy: parseFloat(document.getElementById('energy').value),
+                valence: parseFloat(document.getElementById('valence').value),
+                tempo: parseInt(document.getElementById('tempo').value),
+                acousticness: parseFloat(document.getElementById('acousticness').value),
+                danceability: parseFloat(document.getElementById('danceability').value),
+                instrumentalness: parseFloat(document.getElementById('instrumentalness').value)
+            };
+            formData.append('features', JSON.stringify(features));
+
+            // Add tags
+            if (tags.length > 0) {
+                formData.append('tags', JSON.stringify(tags));
+            }
+
+            try {
+                const uploadBtn = document.getElementById('uploadBtn');
+                const progressBar = document.getElementById('progressBar');
+                const progressBarFill = document.getElementById('progressBarFill');
+
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = '⏳ Uploading...';
+                progressBar.style.display = 'block';
+
+                // Simulate progress (since we can't track real progress easily with fetch)
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 90) progress = 90;
+                    progressBarFill.style.width = progress + '%';
+                }, 200);
+
+                const endpoint = audioFile || imageFile ? '/api/v1/tracks/upload' : '/api/v1/tracks/upload-metadata';
+                const options = {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                };
+
+                if (audioFile || imageFile) {
+                    options.body = formData;
+                } else {
+                    // For metadata-only upload
+                    options.headers['Content-Type'] = 'application/json';
+                    options.body = JSON.stringify({
+                        title,
+                        language,
+                        artist: artist || undefined,
+                        genre: genre || undefined,
+                        era: era ? parseInt(era) : undefined,
+                        duration: duration ? parseInt(duration) : undefined,
+                        features,
+                        tags: tags.length > 0 ? tags : undefined
+                    });
+                }
+
+                const response = await fetch(endpoint, options);
+                const data = await response.json();
+
+                clearInterval(progressInterval);
+                progressBarFill.style.width = '100%';
+
+                if (data.success) {
+                    showAlert('success', `🎉 Song "${data.data.track.title}" uploaded successfully!`);
+                    document.getElementById('uploadForm').reset();
+                    tags = [];
+                    renderTags();
+                    
+                    // Reset file displays
+                    updateFileDisplay('audioDisplay', null);
+                    updateFileDisplay('imageDisplay', null);
+                    
+                    // Reset range values
+                    document.querySelectorAll('input[type="range"]').forEach(input => {
+                        const valueSpan = document.getElementById(input.id + 'Value');
+                        if (valueSpan) {
+                            valueSpan.textContent = input.value;
+                        }
+                    });
+                } else {
+                    showAlert('error', data.message || 'Failed to upload song.');
+                }
+            } catch (error) {
+                showAlert('error', 'Upload failed. Please try again.');
+                console.error('Upload error:', error);
+            } finally {
+                const uploadBtn = document.getElementById('uploadBtn');
+                const progressBar = document.getElementById('progressBar');
+                
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '🚀 Upload Song';
+                
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    document.getElementById('progressBarFill').style.width = '0%';
+                }, 2000);
+            }
+        }
+
+        function showAlert(type, message) {
+            // Hide all alerts
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.style.display = 'none';
+            });
+
+            // Show the specific alert
+            const alert = document.getElementById(type + 'Alert');
+            alert.textContent = message;
+            alert.style.display = 'block';
+
+            // Auto-hide after 5 seconds for non-error alerts
+            if (type !== 'error') {
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
