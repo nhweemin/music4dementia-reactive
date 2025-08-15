@@ -5,7 +5,7 @@ import rateLimit from '@fastify/rate-limit';
 import jwt from '@fastify/jwt';
 import websocket from '@fastify/websocket';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import path, { dirname, join } from 'path';
 import dotenv from 'dotenv';
 
 // Import our modules
@@ -137,6 +137,17 @@ async function start() {
     // Setup reactive features
     await setupReactiveFeatures();
     
+    // Serve static files
+    await fastify.register(import('@fastify/static'), {
+      root: path.join(process.cwd(), 'public'),
+      prefix: '/public/'
+    });
+
+    // Upload page route
+    fastify.get('/upload', async (request, reply) => {
+      return reply.sendFile('upload.html');
+    });
+
     // Setup routes
     await setupRoutes(fastify);
     
