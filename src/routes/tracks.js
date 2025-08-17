@@ -177,6 +177,7 @@ export default async function trackRoutes(fastify, options) {
   // Upload new track with files (multipart form data)
   fastify.post('/upload', async (request, reply) => {
     try {
+      fastify.log.info('📤 Starting file upload process');
 
       const parts = request.parts();
       const trackData = {};
@@ -186,7 +187,9 @@ export default async function trackRoutes(fastify, options) {
       // Process multipart form data
       for await (const part of parts) {
         if (part.type === 'file') {
+          fastify.log.info(`📁 Processing file: ${part.filename}, type: ${part.mimetype}, size: ${part.file?.bytesRead || 'unknown'}`);
           const buffer = await part.toBuffer();
+          fastify.log.info(`📦 File buffered successfully, size: ${buffer.length} bytes`);
           
           if (part.fieldname === 'audio') {
             // Validate audio file
@@ -198,12 +201,14 @@ export default async function trackRoutes(fastify, options) {
             }
 
             // Upload audio to GridFS
+            fastify.log.info(`🎵 Uploading audio file to GridFS: ${part.filename}`);
             const audioInfo = await uploadAudioFile(part.filename, buffer, {
               contentType: part.mimetype,
               originalName: part.filename,
               uploadedBy: request.user?.id
             });
             audioFileId = audioInfo.fileId;
+            fastify.log.info(`✅ Audio file uploaded successfully, ID: ${audioFileId}`);
 
           } else if (part.fieldname === 'image') {
             // Validate image file
@@ -215,12 +220,14 @@ export default async function trackRoutes(fastify, options) {
             }
 
             // Upload image to GridFS
+            fastify.log.info(`🖼️ Uploading image file to GridFS: ${part.filename}`);
             const imageInfo = await uploadImageFile(part.filename, buffer, {
               contentType: part.mimetype,
               originalName: part.filename,
               uploadedBy: request.user?.id
             });
             imageFileId = imageInfo.fileId;
+            fastify.log.info(`✅ Image file uploaded successfully, ID: ${imageFileId}`);
           }
         } else {
           // Handle form fields
