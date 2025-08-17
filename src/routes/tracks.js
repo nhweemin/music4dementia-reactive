@@ -187,9 +187,27 @@ export default async function trackRoutes(fastify, options) {
       // Process multipart form data
       for await (const part of parts) {
         if (part.type === 'file') {
-          fastify.log.info(`📁 Processing file: ${part.filename}, type: ${part.mimetype}, size: ${part.file?.bytesRead || 'unknown'}`);
-          const buffer = await part.toBuffer();
-          fastify.log.info(`📦 File buffered successfully, size: ${buffer.length} bytes`);
+          fastify.log.info(`📁 Processing file: ${part.filename}, type: ${part.mimetype}`);
+          
+          // For large files, stream directly instead of buffering
+          const chunks = [];
+          let totalSize = 0;
+          
+          for await (const chunk of part.file) {
+            chunks.push(chunk);
+            totalSize += chunk.length;
+            
+            // Prevent memory issues with extremely large files
+            if (totalSize > 50 * 1024 * 1024) { // 50MB limit
+              return reply.code(413).send({
+                error: 'Payload Too Large',
+                message: 'File size exceeds 50MB limit'
+              });
+            }
+          }
+          
+          const buffer = Buffer.concat(chunks);
+          fastify.log.info(`📦 File processed successfully, size: ${buffer.length} bytes`);
           
           if (part.fieldname === 'audio') {
             // Validate audio file

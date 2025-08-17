@@ -34,6 +34,9 @@ const fastify = Fastify({
       },
     } : undefined,
   },
+  connectionTimeout: 60000, // 60 seconds
+  keepAliveTimeout: 65000, // 65 seconds
+  requestTimeout: 120000 // 2 minutes for file uploads
 });
 
 // Error handler
@@ -98,7 +101,9 @@ async function setupPlugins() {
       fileSize: 50 * 1024 * 1024, // 50MB
       files: 10, // Max 10 files per request
       fieldSize: 1024 * 1024 // 1MB for text fields
-    }
+    },
+    attachFieldsToBody: false, // Don't attach fields to body for better memory usage
+    sharedSchemaId: 'MultipartFileType'
   });
 }
 
