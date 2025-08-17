@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "build": "echo 'No build step needed'",
-    "test": "node --test test/**/*.test.js"
+    "test": "node --test test/**/*.test.js",
+    "seed": "node scripts/seed-database.js"
   },
   "keywords": [
     "music-therapy",
