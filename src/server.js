@@ -4,6 +4,7 @@ import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import jwt from '@fastify/jwt';
 import websocket from '@fastify/websocket';
+import multipart from '@fastify/multipart';
 import { fileURLToPath } from 'url';
 import path, { dirname, join } from 'path';
 import dotenv from 'dotenv';
@@ -92,7 +93,7 @@ async function setupPlugins() {
   });
   
   // Multipart support for file uploads
-  await fastify.register(import('@fastify/multipart'), {
+  await fastify.register(multipart, {
     limits: {
       fileSize: 50 * 1024 * 1024, // 50MB
       files: 10, // Max 10 files per request
@@ -170,6 +171,7 @@ async function start() {
     fastify.log.info('🚀 Real-time music therapy sessions ready!');
     
   } catch (error) {
+    console.error('Failed to start server:', error);
     fastify.log.error('Failed to start server:', error);
     process.exit(1);
   }
