@@ -324,6 +324,17 @@
             <div class="upload-section" id="uploadSection">
                 <h3>🎵 Upload Your Song</h3>
                 
+                <!-- Test Mode Toggle -->
+                <div class="alert alert-info" style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; margin: 0;">
+                        <input type="checkbox" id="testMode" style="margin-right: 10px;">
+                        <strong>🧪 Test Mode</strong> - Debug file processing without saving to database
+                    </label>
+                    <small style="display: block; margin-top: 5px; color: #666;">
+                        Use this to test if large files can be processed without the full upload pipeline.
+                    </small>
+                </div>
+                
                 <form id="uploadForm" enctype="multipart/form-data">
                     <!-- File Uploads -->
                     <div class="form-row">
@@ -705,7 +716,17 @@
                     progressBarFill.style.width = progress + '%';
                 }, 200);
 
-                const endpoint = audioFile || imageFile ? '/api/v1/tracks/upload' : '/api/v1/tracks/upload-metadata';
+                // Check if test mode is enabled
+                const testMode = document.getElementById('testMode').checked;
+                
+                let endpoint;
+                if (testMode && (audioFile || imageFile)) {
+                    endpoint = '/api/v1/tracks/upload-test';
+                } else if (audioFile || imageFile) {
+                    endpoint = '/api/v1/tracks/upload';
+                } else {
+                    endpoint = '/api/v1/tracks/upload-metadata';
+                }
                 const options = {
                     method: 'POST',
                     headers: {
@@ -737,7 +758,11 @@
                 progressBarFill.style.width = '100%';
 
                 if (data.success) {
-                    showAlert('success', `🎉 Song "${data.data.track.title}" uploaded successfully!`);
+                    if (testMode) {
+                        showAlert('success', `🧪 Test completed! Processed ${data.data.filesProcessed} files (${Math.round(data.data.totalSize / 1024 / 1024 * 100) / 100} MB total)`);
+                    } else {
+                        showAlert('success', `🎉 Song "${data.data.track?.title || 'Unknown'}" uploaded successfully!`);
+                    }
                     document.getElementById('uploadForm').reset();
                     tags = [];
                     renderTags();
