@@ -50,13 +50,13 @@ export async function uploadFileToGridFS(bucket, filename, buffer, metadata = {}
     });
 
     uploadStream.on('error', reject);
-    uploadStream.on('finish', (file) => {
+    uploadStream.on('finish', () => {
       resolve({
-        fileId: file._id,
-        filename: file.filename,
-        length: file.length,
-        uploadDate: file.uploadDate,
-        metadata: file.metadata
+        fileId: uploadStream.id,
+        filename: filename,
+        length: buffer.length,
+        uploadDate: new Date(),
+        metadata: metadata
       });
     });
 
