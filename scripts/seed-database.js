@@ -16,6 +16,7 @@ const therapeuticTracks = [
     genre: "Meditation",
     era: 2023,
     duration: 600, // 10 minutes
+    uri: "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3", // Sample audio URL
     features: {
       energy: 0.1,
       valence: 0.7,
@@ -34,6 +35,7 @@ const therapeuticTracks = [
     genre: "Meditation",
     era: 2022,
     duration: 480, // 8 minutes
+    uri: "https://sample-videos.com/zip/10/mp3/SampleAudio_0.4mb_mp3.mp3", // Sample audio URL
     features: {
       energy: 0.2,
       valence: 0.8,
@@ -72,6 +74,7 @@ const therapeuticTracks = [
     genre: "Classical",
     era: 1905,
     duration: 300, // 5 minutes
+    uri: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Sample audio URL
     features: {
       energy: 0.3,
       valence: 0.7,
