@@ -2,6 +2,52 @@ import Track from '../models/Track.js';
 import { uploadAudioFile, uploadImageFile } from '../utils/gridfs.js';
 
 export default async function trackRoutes(fastify, options) {
+  // Get all tracks (paginated)
+  fastify.get('/', async (request, reply) => {
+    try {
+      const { page = 1, limit = 20, genre, language, sortBy = 'createdAt', sortOrder = 'desc' } = request.query;
+      const skip = (page - 1) * limit;
+      
+      // Build filter query
+      const filter = { isActive: true };
+      if (genre) filter.genre = genre;
+      if (language) filter.language = language;
+      
+      // Build sort query
+      const sort = {};
+      sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+      
+      const tracks = await Track.find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(parseInt(limit));
+      
+      const totalTracks = await Track.countDocuments(filter);
+      const totalPages = Math.ceil(totalTracks / limit);
+      
+      reply.send({
+        success: true,
+        data: {
+          tracks: tracks.map(track => track.toJSONWithUrls()),
+          pagination: {
+            currentPage: parseInt(page),
+            totalPages,
+            totalTracks,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1
+          }
+        }
+      });
+      
+    } catch (error) {
+      fastify.log.error('Get tracks error:', error);
+      reply.code(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to retrieve tracks'
+      });
+    }
+  });
+
   // Search tracks
   fastify.post('/search', {
     schema: {
