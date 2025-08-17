@@ -169,6 +169,7 @@ async function start() {
     
     fastify.log.info(`🎵 Fuxi Reactive Backend running on http://${host}:${port}`);
     fastify.log.info('🚀 Real-time music therapy sessions ready!');
+    console.log(`✅ Server successfully started on port ${port}`);
     
   } catch (error) {
     console.error('Failed to start server:', error);
