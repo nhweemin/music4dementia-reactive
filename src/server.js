@@ -90,6 +90,15 @@ async function setupPlugins() {
       }
     }
   });
+  
+  // Multipart support for file uploads
+  await fastify.register(import('@fastify/multipart'), {
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB
+      files: 10, // Max 10 files per request
+      fieldSize: 1024 * 1024 // 1MB for text fields
+    }
+  });
 }
 
 // Health check route

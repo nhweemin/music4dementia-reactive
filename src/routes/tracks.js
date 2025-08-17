@@ -131,14 +131,6 @@ export default async function trackRoutes(fastify, options) {
   // Upload new track with files (multipart form data)
   fastify.post('/upload', async (request, reply) => {
     try {
-      // Register multipart if not already registered
-      if (!fastify.hasContentTypeParser('multipart/form-data')) {
-        await fastify.register(import('@fastify/multipart'), {
-          limits: {
-            fileSize: 50 * 1024 * 1024, // 50MB
-          }
-        });
-      }
 
       const parts = request.parts();
       const trackData = {};
