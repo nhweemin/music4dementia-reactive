@@ -51,6 +51,7 @@ export async function uploadFileToGridFS(bucket, filename, buffer, metadata = {}
 
     uploadStream.on('error', reject);
     uploadStream.on('finish', () => {
+      // Fixed: Use uploadStream.id instead of file._id (file parameter doesn't exist)
       resolve({
         fileId: uploadStream.id,
         filename: filename,
