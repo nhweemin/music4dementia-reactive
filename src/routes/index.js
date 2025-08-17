@@ -5,6 +5,7 @@ import playlistRoutes from './playlists.js';
 import sessionRoutes from './sessions.js';
 import analyticsRoutes from './analytics.js';
 import fileRoutes from './files.js';
+import adminRoutes from './admin.js';
 
 export async function setupRoutes(fastify) {
   // API versioning
@@ -32,6 +33,7 @@ export async function setupRoutes(fastify) {
       await fastify.register(playlistRoutes, { prefix: '/playlists' });
       await fastify.register(sessionRoutes, { prefix: '/sessions' });
       await fastify.register(analyticsRoutes, { prefix: '/analytics' });
+      await fastify.register(adminRoutes, { prefix: '/admin' });
       // await fastify.register(fileRoutes, { prefix: '/files' }); // TODO: Fix route registration issue
       
     });
