@@ -174,6 +174,47 @@ export default async function trackRoutes(fastify, options) {
     }
   });
   
+  // Test upload endpoint (for debugging)
+  fastify.post('/upload-test', async (request, reply) => {
+    try {
+      fastify.log.info('🧪 Starting test upload process');
+      
+      const parts = request.parts();
+      let fileCount = 0;
+      let totalSize = 0;
+      
+      for await (const part of parts) {
+        if (part.type === 'file') {
+          fileCount++;
+          fastify.log.info(`📁 Test processing file ${fileCount}: ${part.filename}, type: ${part.mimetype}`);
+          
+          const buffer = await part.toBuffer();
+          totalSize += buffer.length;
+          
+          fastify.log.info(`📦 Test file ${fileCount} buffered: ${buffer.length} bytes`);
+        } else {
+          fastify.log.info(`📝 Test field: ${part.fieldname} = ${part.value}`);
+        }
+      }
+      
+      reply.send({
+        success: true,
+        message: 'Test upload completed successfully',
+        data: {
+          filesProcessed: fileCount,
+          totalSize: totalSize
+        }
+      });
+      
+    } catch (error) {
+      fastify.log.error('💥 Test upload error:', error);
+      reply.code(500).send({
+        error: 'Test Upload Error',
+        message: error.message
+      });
+    }
+  });
+  
   // Upload new track with files (multipart form data)
   fastify.post('/upload', async (request, reply) => {
     try {
@@ -189,27 +230,20 @@ export default async function trackRoutes(fastify, options) {
         if (part.type === 'file') {
           fastify.log.info(`📁 Processing file: ${part.filename}, type: ${part.mimetype}`);
           
-          // For large files, stream directly instead of buffering
-          const chunks = [];
-          let totalSize = 0;
-          
-          for await (const chunk of part.file) {
-            chunks.push(chunk);
-            totalSize += chunk.length;
+          try {
+            // Use the original toBuffer method but with error handling
+            const buffer = await part.toBuffer();
+            fastify.log.info(`📦 File buffered successfully, size: ${buffer.length} bytes`);
             
-            // Prevent memory issues with extremely large files
-            if (totalSize > 50 * 1024 * 1024) { // 50MB limit
+            // Check file size after buffering
+            if (buffer.length > 50 * 1024 * 1024) { // 50MB limit
               return reply.code(413).send({
                 error: 'Payload Too Large',
                 message: 'File size exceeds 50MB limit'
               });
             }
-          }
           
-          const buffer = Buffer.concat(chunks);
-          fastify.log.info(`📦 File processed successfully, size: ${buffer.length} bytes`);
-          
-          if (part.fieldname === 'audio') {
+            if (part.fieldname === 'audio') {
             // Validate audio file
             if (!part.mimetype.startsWith('audio/')) {
               return reply.code(400).send({
@@ -246,6 +280,14 @@ export default async function trackRoutes(fastify, options) {
             });
             imageFileId = imageInfo.fileId;
             fastify.log.info(`✅ Image file uploaded successfully, ID: ${imageFileId}`);
+          }
+          
+          } catch (fileError) {
+            fastify.log.error(`💥 File processing error for ${part.filename}:`, fileError);
+            return reply.code(500).send({
+              error: 'File Processing Error',
+              message: `Failed to process file: ${fileError.message}`
+            });
           }
         } else {
           // Handle form fields
