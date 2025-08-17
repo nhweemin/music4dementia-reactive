@@ -12,7 +12,7 @@ const therapeuticTracks = [
   {
     title: "Ocean Waves Meditation",
     artist: "Nature Sounds Collective",
-    language: "Instrumental",
+    language: "None",
     genre: "Meditation",
     era: 2023,
     duration: 600, // 10 minutes
@@ -48,7 +48,7 @@ const therapeuticTracks = [
   {
     title: "Forest Rain Ambience",
     artist: "Peaceful Soundscapes",
-    language: "Instrumental",
+    language: "None",
     genre: "Nature Sounds",
     era: 2023,
     duration: 900, // 15 minutes
@@ -68,7 +68,7 @@ const therapeuticTracks = [
   {
     title: "Clair de Lune",
     artist: "Claude Debussy",
-    language: "Instrumental",
+    language: "None",
     genre: "Classical",
     era: 1905,
     duration: 300, // 5 minutes
@@ -86,7 +86,7 @@ const therapeuticTracks = [
   {
     title: "Air on the G String",
     artist: "Johann Sebastian Bach",
-    language: "Instrumental",
+    language: "None",
     genre: "Classical",
     era: 1731,
     duration: 360, // 6 minutes
@@ -106,7 +106,7 @@ const therapeuticTracks = [
   {
     title: "Weightless",
     artist: "Marconi Union",
-    language: "Instrumental",
+    language: "None",
     genre: "Ambient",
     era: 2011,
     duration: 480, // 8 minutes
@@ -124,7 +124,7 @@ const therapeuticTracks = [
   {
     title: "Stellardrone - Light Years",
     artist: "Stellardrone",
-    language: "Instrumental",
+    language: "None",
     genre: "Ambient",
     era: 2012,
     duration: 420, // 7 minutes
@@ -144,7 +144,7 @@ const therapeuticTracks = [
   {
     title: "432Hz Healing Frequency",
     artist: "Frequency Healers",
-    language: "Instrumental",
+    language: "None",
     genre: "Therapy",
     era: 2023,
     duration: 720, // 12 minutes
@@ -162,7 +162,7 @@ const therapeuticTracks = [
   {
     title: "Alpha Waves - Focus & Creativity",
     artist: "Brainwave Entrainment Lab",
-    language: "Instrumental",
+    language: "None",
     genre: "Binaural",
     era: 2022,
     duration: 900, // 15 minutes
@@ -182,7 +182,7 @@ const therapeuticTracks = [
   {
     title: "Tibetan Singing Bowls",
     artist: "Himalayan Healers",
-    language: "Instrumental",
+    language: "None",
     genre: "World",
     era: 2023,
     duration: 600, // 10 minutes
@@ -200,7 +200,7 @@ const therapeuticTracks = [
   {
     title: "Native American Flute Journey",
     artist: "Wind Spirit",
-    language: "Instrumental",
+    language: "None",
     genre: "World",
     era: 2022,
     duration: 540, // 9 minutes
@@ -296,7 +296,7 @@ const therapeuticTracks = [
   {
     title: "Deep Sleep Delta Waves",
     artist: "Sleep Therapy Institute",
-    language: "Instrumental",
+    language: "None",
     genre: "Sleep",
     era: 2023,
     duration: 3600, // 1 hour
@@ -314,7 +314,7 @@ const therapeuticTracks = [
   {
     title: "Moonlight Sonata - 1st Movement",
     artist: "Ludwig van Beethoven",
-    language: "Instrumental",
+    language: "None",
     genre: "Classical",
     era: 1801,
     duration: 900, // 15 minutes
@@ -334,7 +334,7 @@ const therapeuticTracks = [
   {
     title: "Calm Piano for Anxiety",
     artist: "Peaceful Piano",
-    language: "Instrumental",
+    language: "None",
     genre: "Piano",
     era: 2023,
     duration: 600, // 10 minutes
@@ -352,7 +352,7 @@ const therapeuticTracks = [
   {
     title: "Stress Relief Soundscape",
     artist: "Relaxation Masters",
-    language: "Instrumental",
+    language: "None",
     genre: "Ambient",
     era: 2022,
     duration: 720, // 12 minutes
@@ -372,7 +372,7 @@ const therapeuticTracks = [
   {
     title: "Lo-Fi Study Beats",
     artist: "Study Music Collective",
-    language: "Instrumental",
+    language: "None",
     genre: "Lo-Fi",
     era: 2023,
     duration: 1800, // 30 minutes
@@ -390,7 +390,7 @@ const therapeuticTracks = [
   {
     title: "White Noise for Focus",
     artist: "Concentration Sounds",
-    language: "Instrumental",
+    language: "None",
     genre: "White Noise",
     era: 2023,
     duration: 3600, // 1 hour
