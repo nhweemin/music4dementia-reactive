@@ -49,16 +49,22 @@ export async function uploadFileToGridFS(bucket, filename, buffer, metadata = {}
       }
     });
 
-    uploadStream.on('error', reject);
+    uploadStream.on('error', (error) => {
+      console.error('GridFS upload error:', error);
+      reject(error);
+    });
+    
     uploadStream.on('finish', () => {
-      // Fixed: Use uploadStream.id instead of file._id (file parameter doesn't exist)
-      resolve({
+      // CRITICAL FIX: Use uploadStream.id - the 'file' parameter does not exist in finish event
+      const uploadResult = {
         fileId: uploadStream.id,
         filename: filename,
         length: buffer.length,
         uploadDate: new Date(),
         metadata: metadata
-      });
+      };
+      console.log('GridFS upload completed:', uploadResult);
+      resolve(uploadResult);
     });
 
     uploadStream.end(buffer);

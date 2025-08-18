@@ -1,6 +1,6 @@
 {
   "name": "fuxi-reactive-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Reactive music therapy backend for dementia patients with real-time features",
   "main": "src/server.js",
   "type": "module",
